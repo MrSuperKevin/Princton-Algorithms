@@ -18,6 +18,7 @@ package percolation; /**********************************************************
 
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.algs4.Stopwatch;
 
 import java.awt.*;
 
@@ -67,7 +68,7 @@ public class PercolationVisualizer {
     public static void main(String[] args) {
         In in = new In(args[0]);      // input file
         int n = in.readInt();         // n-by-n percolation system
-        System.out.println("===>" + n);
+        System.out.println("grid size = " + n);
 
         // turn on animation mode
         StdDraw.enableDoubleBuffering();
@@ -77,13 +78,23 @@ public class PercolationVisualizer {
         draw(perc, n);
         StdDraw.show();
         StdDraw.pause(DELAY);
-        while (!in.isEmpty()) {
+        Stopwatch stopwatch = new Stopwatch();
+        while (!in.isEmpty() && !perc.percolates()) {
             int i = in.readInt();
             int j = in.readInt();
             perc.open(i, j);
             draw(perc, n);
             StdDraw.show();
             StdDraw.pause(DELAY);
+        }
+        System.out.println(String.format("Experiment status" +
+                "-----------------------------------" +
+                "Total time %fs", stopwatch.elapsedTime()));
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }
