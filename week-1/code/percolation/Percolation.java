@@ -25,10 +25,6 @@ public class Percolation {
         grid = new int[n][n];
         // put one virtual point in the head and one in the tail of the array in unionFind, and connect the head with grid[0][*], connect the tail with grid[size - 1][*]
         weightedQuickUnionUF = new WeightedQuickUnionUF(n * n + 2);
-        for (int i = 1; i <= n; i++) {
-//            weightedQuickUnionUF.union(0, calIndexOfArray(1, i));
-//            weightedQuickUnionUF.union(n * n + 1, calIndexOfArray(1, i));
-        }
     }
 
     // test client (optional)
