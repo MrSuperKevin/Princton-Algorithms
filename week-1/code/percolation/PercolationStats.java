@@ -1,4 +1,4 @@
-package percolation;/* *****************************************************************************
+/* *****************************************************************************
  *  Name:
  *  Date:
  *  Description:
@@ -6,11 +6,11 @@ package percolation;/* *********************************************************
 
 import edu.princeton.cs.algs4.Stopwatch;
 
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 
 public class PercolationStats {
 
-    private double threshold[];
+    private double[] threshold;
 
     // perform independent trials on an n-by-n grid
     public PercolationStats(int n, int trials) {
@@ -19,12 +19,13 @@ public class PercolationStats {
         }
 
         threshold = new double[trials];
+        Random random = new Random();
         for (int i = 0; i < trials; i++) {
             Percolation percolation = new Percolation(n);
 
             while (!percolation.percolates()) {
-                int row = ThreadLocalRandom.current().nextInt(1, n + 1);
-                int col = ThreadLocalRandom.current().nextInt(1, n + 1);
+                int row = random.nextInt(n) + 1;
+                int col = random.nextInt(n) + 1;
                 if (percolation.isOpen(row, col)) {
                     continue;
                 }

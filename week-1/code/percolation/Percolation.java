@@ -1,4 +1,4 @@
-package percolation;/* *****************************************************************************
+/* *****************************************************************************
  *  Name:
  *  Date:
  *  Description:
@@ -43,26 +43,26 @@ public class Percolation {
 
             // connect sites around the new open site
             if (row > 1) {
-                if (isOpen(row - 1, col))
+                if (isOpen(row - 1, col)) {
                     weightedQuickUnionUF.union(calIndexOfArray(row, col), calIndexOfArray(row - 1, col));
+                }
             } else {
                 weightedQuickUnionUF.union(calIndexOfArray(row, col), 0);
             }
 
             if (row < size) {
-                if (isOpen(row + 1, col))
+                if (isOpen(row + 1, col)) {
                     weightedQuickUnionUF.union(calIndexOfArray(row, col), calIndexOfArray(row + 1, col));
+                }
             } else {
                 weightedQuickUnionUF.union(calIndexOfArray(row, col), size * size + 1);
             }
 
-            if (col > 1) {
-                if (isOpen(row, col - 1))
-                    weightedQuickUnionUF.union(calIndexOfArray(row, col), calIndexOfArray(row, col - 1));
+            if (col > 1 && isOpen(row, col - 1)) {
+                weightedQuickUnionUF.union(calIndexOfArray(row, col), calIndexOfArray(row, col - 1));
             }
-            if (col < size) {
-                if (isOpen(row, col + 1))
-                    weightedQuickUnionUF.union(calIndexOfArray(row, col), calIndexOfArray(row, col + 1));
+            if (col < size && isOpen(row, col + 1)) {
+                weightedQuickUnionUF.union(calIndexOfArray(row, col), calIndexOfArray(row, col + 1));
             }
         }
     }
