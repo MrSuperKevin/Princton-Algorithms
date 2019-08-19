@@ -6,8 +6,6 @@
 
 import edu.princeton.cs.algs4.Stopwatch;
 
-import java.util.Random;
-
 public class PercolationStats {
 
 	private double[] threshold;
@@ -19,16 +17,13 @@ public class PercolationStats {
 		}
 
 		threshold = new double[trials];
-		Random random = new Random();
 		for (int i = 0; i < trials; i++) {
 			Percolation percolation = new Percolation(n);
 
+			int[] rows = new int[n], cols = new int[n];
 			while (!percolation.percolates()) {
-				int row = random.nextInt(n) + 1;
-				int col = random.nextInt(n) + 1;
-				if (percolation.isOpen(row, col)) {
-					continue;
-				}
+				int row = getRandomNotRepeat(1, n + 1, rows);
+				int col = getRandomNotRepeat(1, n + 1, cols);
 
 				percolation.open(row, col);
 			}
@@ -40,7 +35,7 @@ public class PercolationStats {
 	// test client (see below)
 	public static void main(String[] args) {
 		Stopwatch stopwatch = new Stopwatch();
-		int n = 200, trials = 10000;
+		int n = 200, trials = 100;
 		PercolationStats percolationStats = new PercolationStats(n, trials);
 		System.out.println("Experiment status");
 		System.out.println("-----------------------------------");
@@ -49,6 +44,15 @@ public class PercolationStats {
 		System.out.println(String.format("Mean of percolation threshold: %f", percolationStats.mean()));
 		System.out.println(String.format("Standard deviation of percolation threshold: %f", percolationStats.stddev()));
 		System.out.println(String.format("Endpoint of 95 confidence interval: %f ~ %f", percolationStats.confidenceLo(), percolationStats.confidenceHi()));
+	}
+
+	private int getRandomNotRepeat(int min, int max, int[] exists) {
+		int random;
+		do {
+			random = (int) (Math.random() * (max - min) + min);
+		} while (exists[random - 1] == 1);
+		exists[random - 1] = 1;
+		return random;
 	}
 
 	// sample mean of percolation threshold
