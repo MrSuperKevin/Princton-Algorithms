@@ -1,4 +1,3 @@
-package percolation;
 /******************************************************************************
  *  Compilation:  javac-algs4 CollidingDisks.java
  *  Execution:    java-algs4 CollidingDisks n
@@ -11,6 +10,7 @@ package percolation;
 
 import edu.princeton.cs.algs4.CollisionSystem;
 import edu.princeton.cs.algs4.Particle;
+import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdDraw;
 
 public class CollidingDisks {
@@ -33,4 +33,31 @@ public class CollidingDisks {
         CollisionSystem system = new CollisionSystem(particles);
         system.simulate(Double.POSITIVE_INFINITY);
     }
+
+    class StackWithMaxValue {
+        private Stack<Integer> s;
+        private Stack<Integer> max;
+
+        public StackWithMaxValue() {
+            this.s = new Stack<>();
+            this.max = new Stack<>();
+        }
+
+        void push(Integer o) {
+            s.push(o);
+            if (max.peek() < o) {
+                max.push(o);
+            }
+        }
+
+        Integer pop() {
+            Integer popped = s.pop();
+            if (popped.equals(max.peek())) {
+                max.pop();
+            }
+
+            return popped;
+        }
+    }
+
 }
