@@ -7,12 +7,14 @@
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
-
-	private int size;
+	private static final int top = 0;
+	private final int size;
+	private final int bottom;
+	private final WeightedQuickUnionUF weightedQuickUnionUF;
+	private final WeightedQuickUnionUF fullness;
 	private int openCount;
 	// 1 if the site on the coordinate is opened
-	private int[][] grid;
-	private WeightedQuickUnionUF weightedQuickUnionUF;
+	private boolean[][] grid;
 
 	// creates n-by-n grid, with all sites initially blocked
 	public Percolation(int n) {
@@ -22,14 +24,11 @@ public class Percolation {
 
 		size = n;
 		openCount = 0;
-		grid = new int[n][n];
-		// put one virtual point in the head and one in the tail of the array in unionFind, and connect the head with grid[0][*], connect the tail with grid[size - 1][*]
+		bottom = size * size + 1;
+		grid = new boolean[n][n];
+		// put one virtual point in the head and one in the tail of the array in unionFind
 		weightedQuickUnionUF = new WeightedQuickUnionUF(n * n + 2);
-	}
-
-	// test client (optional)
-	public static void main(String[] args) {
-
+		fullness = new WeightedQuickUnionUF(n * n + 1);
 	}
 
 	// opens the site (row, col) if it is not open already
@@ -37,33 +36,39 @@ public class Percolation {
 		checkLegalArguments(row);
 		checkLegalArguments(col);
 
-		if (grid[row - 1][col - 1] == 0) {
-			grid[row - 1][col - 1] = 1;
-			openCount++;
+		if (isOpen(row, col)) {
+			return;
+		}
 
-			// connect sites around the new open site
-			if (row > 1) {
-				if (isOpen(row - 1, col)) {
-					weightedQuickUnionUF.union(calIndexOfArray(row, col), calIndexOfArray(row - 1, col));
-				}
-			} else {
-				weightedQuickUnionUF.union(calIndexOfArray(row, col), 0);
-			}
+		grid[row - 1][col - 1] = true;
+		openCount++;
 
-			if (row < size) {
-				if (isOpen(row + 1, col)) {
-					weightedQuickUnionUF.union(calIndexOfArray(row, col), calIndexOfArray(row + 1, col));
-				}
-			} else {
-				weightedQuickUnionUF.union(calIndexOfArray(row, col), size * size + 1);
-			}
+		if (row == 1) {
+			weightedQuickUnionUF.union(calIndexOfArray(row, col), top);
+			fullness.union(calIndexOfArray(row, col), top);
+		}
+		if (row == size) {
+			weightedQuickUnionUF.union(calIndexOfArray(row, col), bottom);
+		}
 
-			if (col > 1 && isOpen(row, col - 1)) {
-				weightedQuickUnionUF.union(calIndexOfArray(row, col), calIndexOfArray(row, col - 1));
-			}
-			if (col < size && isOpen(row, col + 1)) {
-				weightedQuickUnionUF.union(calIndexOfArray(row, col), calIndexOfArray(row, col + 1));
-			}
+		// connect sites around the new open site
+		if (row > 1 && isOpen(row - 1, col)) {
+			weightedQuickUnionUF.union(calIndexOfArray(row, col), calIndexOfArray(row - 1, col));
+			fullness.union(calIndexOfArray(row, col), calIndexOfArray(row - 1, col));
+		}
+
+		if (row < size && isOpen(row + 1, col)) {
+			weightedQuickUnionUF.union(calIndexOfArray(row, col), calIndexOfArray(row + 1, col));
+			fullness.union(calIndexOfArray(row, col), calIndexOfArray(row + 1, col));
+		}
+
+		if (col > 1 && isOpen(row, col - 1)) {
+			weightedQuickUnionUF.union(calIndexOfArray(row, col), calIndexOfArray(row, col - 1));
+			fullness.union(calIndexOfArray(row, col), calIndexOfArray(row, col - 1));
+		}
+		if (col < size && isOpen(row, col + 1)) {
+			weightedQuickUnionUF.union(calIndexOfArray(row, col), calIndexOfArray(row, col + 1));
+			fullness.union(calIndexOfArray(row, col), calIndexOfArray(row, col + 1));
 		}
 	}
 
@@ -77,7 +82,7 @@ public class Percolation {
 		checkLegalArguments(row);
 		checkLegalArguments(col);
 
-		return grid[row - 1][col - 1] == 1;
+		return grid[row - 1][col - 1] == true;
 	}
 
 	// is the site (row, col) full? means if the top to here percolates
@@ -86,7 +91,7 @@ public class Percolation {
 		checkLegalArguments(col);
 
 		// 网格的头顶点和该点的连通性
-		return weightedQuickUnionUF.connected(0, calIndexOfArray(row, col));
+		return fullness.connected(top, calIndexOfArray(row, col));
 	}
 
 	// returns the number of open sites
@@ -96,7 +101,7 @@ public class Percolation {
 
 	// does the system percolate?
 	public boolean percolates() {
-		return weightedQuickUnionUF.connected(0, size * size + 1);
+		return weightedQuickUnionUF.connected(top, bottom);
 	}
 
 	// check input index, should between 1~n

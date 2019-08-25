@@ -4,11 +4,15 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.StdRandom;
+import edu.princeton.cs.algs4.StdStats;
 import edu.princeton.cs.algs4.Stopwatch;
 
 public class PercolationStats {
-
-	private double[] threshold;
+	private static final double CONFIDENCE_95 = 1.96;
+	private final double[] threshold;
+	private double mean;
+	private double stddev;
 
 	// perform independent trials on an n-by-n grid
 	public PercolationStats(int n, int trials) {
@@ -20,15 +24,19 @@ public class PercolationStats {
 		for (int i = 0; i < trials; i++) {
 			Percolation percolation = new Percolation(n);
 
-			int[] rows = new int[n], cols = new int[n];
+			int count = 0;
 			while (!percolation.percolates()) {
-				int row = getRandomNotRepeat(1, n + 1, rows);
-				int col = getRandomNotRepeat(1, n + 1, cols);
+				int row, col;
+				do {
+					row = StdRandom.uniform(n) + 1;
+					col = StdRandom.uniform(n) + 1;
+				} while (percolation.isOpen(row, col));
 
 				percolation.open(row, col);
+				count++;
 			}
 
-			threshold[i] = percolation.numberOfOpenSites() * 1.0 / (n * n);
+			threshold[i] = count * 1.0 / (n * n);
 		}
 	}
 
@@ -46,43 +54,30 @@ public class PercolationStats {
 		System.out.println(String.format("Endpoint of 95 confidence interval: %f ~ %f", percolationStats.confidenceLo(), percolationStats.confidenceHi()));
 	}
 
-	private int getRandomNotRepeat(int min, int max, int[] exists) {
-		int random;
-		do {
-			random = (int) (Math.random() * (max - min) + min);
-		} while (exists[random - 1] == 1);
-		exists[random - 1] = 1;
-		return random;
-	}
-
 	// sample mean of percolation threshold
 	public double mean() {
-		double sum = 0.0;
-		for (int i = 0; i < threshold.length; i++) {
-			sum += threshold[i];
+		if (mean < 0.0001) {
+			mean = StdStats.mean(threshold, 0, threshold.length);
 		}
-		return sum / threshold.length;
+		return mean;
 	}
 
 	// sample standard deviation of percolation threshold
 	public double stddev() {
-		double mean = mean();
-		double sum = 0.0;
-		for (int i = 0; i < threshold.length; i++) {
-			sum += (threshold[i] - mean) * (threshold[i] - mean);
+		if (stddev <= 0.0001) {
+			stddev = StdStats.stddev(threshold, 0, threshold.length);
 		}
-
-		return sum * 1.0 / (threshold.length - 1);
+		return stddev;
 	}
 
 	// low endpoint of 95% confidence interval
 	public double confidenceLo() {
-		return mean() - 1.96 * stddev() / Math.sqrt(threshold.length);
+		return mean() - CONFIDENCE_95 * stddev() / Math.sqrt(threshold.length);
 	}
 
 	// high endpoint of 95% confidence interval
 	public double confidenceHi() {
-		return mean() + 1.96 * stddev() / Math.sqrt(threshold.length);
+		return mean() + CONFIDENCE_95 * stddev() / Math.sqrt(threshold.length);
 	}
 
 }
