@@ -4,10 +4,12 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class RandomizedQueue<Item> implements Iterable<Item> {
-	private Deque<Item> deque;
+	private int capacity = 4;
+	private int size;
+	private Item[] array;
 
 	public RandomizedQueue() {
-		this.deque = new Deque<>();
+		this.array = (Item[]) new Object[capacity];
 	}
 
 	// unit testing (required)
@@ -21,6 +23,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 		randomizedQueue.enqueue(" an ");
 		randomizedQueue.enqueue(" queue ");
 		System.out.println(randomizedQueue.toString());
+		System.out.println(randomizedQueue.size());
 
 		System.out.println("======= iterator() ======");
 		Iterator<String> iterator = randomizedQueue.iterator();
@@ -43,27 +46,73 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
 	@Override
 	public String toString() {
-		return deque.toString();
+		StringBuilder stringBuilder = new StringBuilder();
+		for (Item item : array) {
+			stringBuilder.append(" --> ").append(item);
+		}
+		return stringBuilder.toString();
 	}
 
 	public boolean isEmpty() {
-		return deque.isEmpty();
+		return size == 0;
+	}
+
+	private void scaleUp() {
+		Item[] tmp = (Item[]) new Object[capacity * 2];
+		capacity *= 2;
+		for (int i = 0; i < size; i++) {
+			tmp[i] = array[i];
+		}
+		array = tmp;
+	}
+
+	private void scaleDown() {
+		Item[] tmp = (Item[]) new Object[capacity / 2];
+		capacity /= 2;
+		for (int i = 0; i < size; i++) {
+			tmp[i] = array[i];
+		}
+		array = tmp;
 	}
 
 	public int size() {
-		return deque.size();
+		return size;
 	}
 
 	public void enqueue(Item item) {
-		deque.addLast(item);
+		if (item == null) {
+			throw new IllegalArgumentException();
+		}
+		// enlarge
+		if (size == capacity) {
+			scaleUp();
+		}
+		array[size] = item;
+		size++;
 	}
 
 	public Item dequeue() {
-		return StdRandom.uniform(2) % 2 == 0 ? deque.removeFirst() : deque.removeLast();
+		if (isEmpty()) {
+			throw new NoSuchElementException();
+		}
+
+		int index = StdRandom.uniform(size);
+		Item item = array[index];
+		array[index] = array[size - 1];
+		array[size - 1] = null;
+		size--;
+		// scale down
+		if (size < capacity / 4) {
+			scaleDown();
+		}
+		return item;
 	}
 
 	public Item sample() {
-		return StdRandom.uniform(2) % 2 == 0 ? deque.getHeadItem() : deque.getTailItem();
+		if (isEmpty()) {
+			throw new NoSuchElementException();
+		}
+		return array[StdRandom.uniform(size)];
 	}
 
 	// return an independent iterator over items in random order
@@ -72,13 +121,22 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 		return new RandomizedQueueIterator();
 	}
 
-	class RandomizedQueueIterator implements Iterator<Item> {
-		private Deque.Node headCursor = deque.getHead();// 由于内部类的问题报错，把类移到外面试试
-		private Deque.Node tailCursor = deque.getTail();
+	private class RandomizedQueueIterator implements Iterator<Item> {
+		private final int[] randomIndexArray;
+		private int current;
+
+		public RandomizedQueueIterator() {
+			current = 0;
+			randomIndexArray = new int[size];
+			for (int i = 0; i < size; i++) {
+				randomIndexArray[i] = i;
+			}
+			StdRandom.shuffle(randomIndexArray);
+		}
 
 		@Override
 		public boolean hasNext() {
-			return headCursor.prev != tailCursor;
+			return current < size;
 		}
 
 		@Override
@@ -86,16 +144,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 			if (!hasNext()) {
 				throw new NoSuchElementException();
 			}
-
-			if (StdRandom.uniform(2) % 2 == 1) {
-				Item item = (Item) headCursor.getItem();
-				headCursor = headCursor.next;
-				return item;
-			} else {
-				Item item = (Item) tailCursor.getItem();
-				tailCursor = tailCursor.prev;
-				return item;
-			}
+			return array[randomIndexArray[current++]];
 		}
 
 		@Override

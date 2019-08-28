@@ -2,34 +2,12 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class Deque<Item> implements Iterable<Item> {
+	private int size;
 	private Node<Item> head;
 	private Node<Item> tail;
-	private int size;
 
 	public Deque() {
 
-	}
-
-	public Node<Item> getHead() {
-		return head;
-	}
-
-	public Node<Item> getTail() {
-		return tail;
-	}
-
-	public Item getHeadItem() {
-		if (head == null) {
-			throw new NoSuchElementException();
-		}
-		return head.item;
-	}
-
-	public Item getTailItem() {
-		if (tail == null) {
-			throw new NoSuchElementException();
-		}
-		return tail.item;
 	}
 
 	public static void main(String[] args) {
@@ -143,7 +121,17 @@ public class Deque<Item> implements Iterable<Item> {
 		return new DequeIterator();
 	}
 
-	class DequeIterator implements Iterator<Item> {
+	private static class Node<Item> {
+		public Item item;
+		public Node next;
+		public Node prev;
+
+		public Node(Item item) {
+			this.item = item;
+		}
+	}
+
+	private class DequeIterator implements Iterator<Item> {
 		private Node<Item> current = head;
 
 		@Override
@@ -164,34 +152,6 @@ public class Deque<Item> implements Iterable<Item> {
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
-		}
-	}
-
-	class Node<Item> {
-		public Item item;
-		public Node next;
-		public Node prev;
-
-		public Item getItem() {
-			return item;
-		}
-
-		public Node getNext() {
-			return next;
-		}
-
-		public Node getPrev() {
-			return prev;
-		}
-
-		public Node(Item item) {
-			this.item = item;
-		}
-
-		public Node(Item item, Node next, Node prev) {
-			this.item = item;
-			this.next = next;
-			this.prev = prev;
 		}
 	}
 }
